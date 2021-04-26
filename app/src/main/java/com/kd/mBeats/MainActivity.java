@@ -1,7 +1,18 @@
 package com.kd.mBeats;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -10,34 +21,26 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.widget.CursorAdapter;
-import android.widget.Toast;
-
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final int REQUEST_CODE = 123;
-    ArrayList<MusicFiles> musicFiles;
+    public static final String LOG_TAG = "KD";
 
+    public static final int REQUEST_CODE = 123;
+    static ArrayList<MusicFiles> musicFiles;
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         checkPermission();
-        initViewPager();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     private void checkPermission() {
         if(ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
         != PackageManager.PERMISSION_GRANTED){
@@ -45,19 +48,20 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     REQUEST_CODE);
         } else {
-            Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
             musicFiles = getAllAudios(this);
+            initViewPager();
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if(REQUEST_CODE == requestCode){
             if(PackageManager.PERMISSION_GRANTED == grantResults[0]){
-                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
                 musicFiles = getAllAudios(this);
+                initViewPager();
             }
         } else {
             ActivityCompat.requestPermissions(MainActivity.this,
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     public static ArrayList<MusicFiles> getAllAudios(Context context){
         ArrayList<MusicFiles> audioList = new ArrayList<>();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -123,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
                 MediaStore.Audio.Media.DURATION,
                 MediaStore.Audio.Media.ARTIST,
                 MediaStore.Audio.Media.DATA //For PATH
+
         };
 
         Cursor cursor = context.getContentResolver().query(uri, projection,
@@ -137,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 String path = cursor.getString(4);
 
                 MusicFiles musicFiles = new MusicFiles(path, title, artist, album, duration);
-                Log.v("Path: " + path, "album: "+album);
+                Log.v(LOG_TAG, "Path: " + path + "    album: "+album);
                 audioList.add(musicFiles);
             }
             cursor.close();
