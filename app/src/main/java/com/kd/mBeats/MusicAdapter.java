@@ -1,6 +1,7 @@
 package com.kd.mBeats;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaMetadataRetriever;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,6 +50,15 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
         holder.songTitle.setText(mFiles.get(position).getTitle());
         holder.albumName.setText(mFiles.get(position).getAlbum());
         holder.songDuration.setText(mFiles.get(position).getDuration());
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, PlayerActivity.class);
+                intent.putExtra("position", position);
+                mContext.startActivity(intent);
+            }
+        });
     }
 
     @Override
