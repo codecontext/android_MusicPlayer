@@ -1,171 +1,194 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/mContainer"
     android:background="@drawable/main_bg"
-    tools:context=".PlayerActivity">
-
-    <RelativeLayout
-        android:id="@+id/layout_top_button"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@drawable/main_gradient_bg"
-        android:layout_alignParentTop="true">
-
-        <ImageView
-            android:id="@+id/backButton"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/ic_chevron_left"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:text="Now Playing"
-            android:textColor="@color/white"
-            android:layout_toEndOf="@id/backButton"
-            android:layout_toStartOf="@+id/menu_button"
-            android:gravity="center_horizontal"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-
-        <ImageView
-            android:id="@+id/menu_button"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/ic_menu"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"/>
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/card"
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:layout_below="@id/layout_top_button">
-
-        <ImageView
-            android:id="@+id/coverArt"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/ic_music"
-            android:scaleType="centerCrop" />
-
-        <ImageView
-            android:id="@+id/ivGradient"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:src="@drawable/main_gradient_bg"
-            android:layout_alignParentBottom="true"/>
-
-    </RelativeLayout>
+    tools:context=".Activities.PlayerActivity">
 
     <TextView
-        android:id="@+id/songTitle"
+        android:id="@+id/tvNowPlaying"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="song name"
-        android:layout_below="@id/card"
-        android:textSize="18dp"
+        android:layout_height="40dp"
+        android:text="Now Playing"
         android:textColor="@color/white"
         android:textStyle="bold"
-        android:gravity="center_horizontal"
-        android:singleLine="true"
-        android:scrollHorizontally="true"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginTop="8dp"/>
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@drawable/bg_gradient_centre"/>
+
+    <ImageView
+        android:id="@+id/ivBackButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_chevron_left" />
+
+    <ImageView
+        android:id="@+id/ivListOfSongs"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_menu" />
+
+
+    <ImageView
+        android:id="@+id/ivAlbumArt"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvNowPlaying"
+        app:srcCompat="@drawable/ic_music"
+        android:scaleType="centerCrop"/>
+
+    <ImageView
+        android:id="@+id/ivGradientShade"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        app:layout_constraintBottom_toBottomOf="@+id/ivAlbumArt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/bg_gradient_linear" />
 
     <TextView
-        android:id="@+id/songArtist"
-        android:layout_width="match_parent"
+        android:id="@+id/tvSongTitle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="song artist"
-        android:layout_below="@id/songTitle"
-        android:textSize="14dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:text="Song Title"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:textColor="@color/white"
-        android:gravity="center_horizontal"
-        android:singleLine="true"
+        android:layout_marginTop="20dp"
         android:scrollHorizontally="true"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp"
-        android:layout_marginTop="4dp"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ivAlbumArt" />
+
+    <TextView
+        android:id="@+id/tvArtistName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="70dp"
+        android:layout_marginRight="70dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:text="Artist Name"
+        android:textSize="14sp"
+        android:textColor="@color/white"
+        android:layout_marginTop="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvSongTitle" />
+
+    <TextView
+        android:id="@+id/tvElapsedDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginBottom="30dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:text="00:00"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/layoutBottomControls"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tvTotalDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="30dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:text="00:00"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/layoutBottomControls"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <SeekBar
         android:id="@+id/seekBar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="100dp" />
+        android:layout_marginBottom="30dp"
+        android:foregroundGravity="center"
+        app:layout_constraintBottom_toTopOf="@+id/layoutBottomControls"
+        app:layout_constraintEnd_toStartOf="@+id/tvTotalDuration"
+        app:layout_constraintStart_toEndOf="@+id/tvElapsedDuration"
+        android:progressBackgroundTint="@color/red_rose"/>
 
     <RelativeLayout
         android:id="@+id/layoutBottomControls"
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20sp"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:background="@drawable/main_gradient_bg">
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/bg_gradient_centre"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
 
         <ImageView
-            android:id="@+id/shuffleButton"
+            android:id="@+id/ivShuffleButton"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/ic_shuffle_off"
-            android:layout_centerVertical="true"
             android:layout_alignParentStart="true"
-            android:layout_marginStart="32dp"/>
+            android:layout_centerVertical="true"
+            android:layout_marginStart="30dp"
+            android:src="@drawable/ic_shuffle_off" />
 
         <ImageView
-            android:id="@+id/prevButton"
+            android:id="@+id/ivPrevButton"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/ic_skip_previous"
-            android:layout_toStartOf="@id/playPauseButton"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="40dp"/>
+            android:layout_marginEnd="40dp"
+            android:layout_toStartOf="@id/fbPlayPauseButton"
+            android:src="@drawable/ic_skip_previous" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/playPauseButton"
+            android:id="@+id/fbPlayPauseButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_play"
-            android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:clickable="true"
             android:focusable="true"
-            android:clickable="true"/>
+            android:src="@drawable/ic_play" />
 
         <ImageView
-            android:id="@+id/nextButton"
+            android:id="@+id/ivNextButton"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/ic_skip_next"
-            android:layout_toEndOf="@id/playPauseButton"
             android:layout_centerVertical="true"
-            android:layout_marginStart="40dp"/>
+            android:layout_marginStart="40dp"
+            android:layout_toEndOf="@id/fbPlayPauseButton"
+            android:src="@drawable/ic_skip_next" />
 
         <ImageView
-            android:id="@+id/repeatButton"
+            android:id="@+id/ivRepeatButton"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/ic_repeat_off"
-            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="32dp"/>
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="30dp"
+            android:src="@drawable/ic_repeat_off" />
 
 
     </RelativeLayout>
 
+</androidx.constraintlayout.widget.ConstraintLayout>
 
-
-</RelativeLayout>
