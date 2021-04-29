@@ -3,6 +3,7 @@ package com.kd.mBeats.Adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaMetadataRetriever;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,9 @@ import com.kd.mBeats.Models.MusicFiles;
 import com.kd.mBeats.R;
 
 import java.util.ArrayList;
+
+import static com.kd.mBeats.Activities.MainActivity.LOG_TAG;
+import static com.kd.mBeats.Activities.PlayerActivity.milliSecondsToTimer;
 
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder> {
 
@@ -41,18 +45,22 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         byte[] image = getAlbumArt(mFiles.get(position).getPath());
         if(image != null){
-            Glide.with(mContext).asBitmap()
+            Glide.with(mContext)
+                    .asBitmap()
                     .load(image)
                     .into(holder.albumArt);
         } else {
             Glide.with(mContext)
+                    .asBitmap()
                     .load(R.drawable.ic_music)
                     .into(holder.albumArt);
         }
 
         holder.songTitle.setText(mFiles.get(position).getTitle());
         holder.albumName.setText(mFiles.get(position).getAlbum());
-        holder.songDuration.setText(mFiles.get(position).getDuration());
+
+        int totalSongDuration = Integer.parseInt(mFiles.get(position).getDuration()) / 1000;
+        holder.songDuration.setText(milliSecondsToTimer(totalSongDuration));
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
