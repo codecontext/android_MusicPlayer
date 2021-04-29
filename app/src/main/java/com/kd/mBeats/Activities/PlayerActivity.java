@@ -1,7 +1,15 @@
 package com.kd.mBeats.Activities;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.palette.graphics.Palette;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -9,7 +17,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -298,17 +309,74 @@ public class PlayerActivity extends AppCompatActivity {
         retriever.setDataSource(uri.toString());
 
         byte[] art = retriever.getEmbeddedPicture();
+        Bitmap bitmap;
 
         if(art != null){
             Glide.with(this)
                     .asBitmap()
                     .load(art)
                     .into(coverArt);
+
+            /* In this logic below, the play screen background, song title and artist name
+               are filled with the color of the Cover Art, dynamically reading from the current song*/
+            bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
+            Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+                @Override
+                public void onGenerated(@Nullable Palette palette) {
+                    Palette.Swatch swatch = palette.getDominantSwatch();
+
+                    ImageView gradient = findViewById(R.id.ivGradientShade);
+                    ConstraintLayout mContainer = findViewById(R.id.mContainer);
+                    gradient.setBackgroundResource(R.drawable.bg_gradient_linear);
+                    mContainer.setBackgroundResource(R.drawable.main_bg);
+
+                    if(swatch != null){
+                        GradientDrawable gradientDrawable = new GradientDrawable(
+                                                            GradientDrawable.Orientation.BOTTOM_TOP,
+                                                            new int[]{swatch.getRgb(), 0x00000000});
+                        gradient.setBackground(gradientDrawable);
+
+                        GradientDrawable gradientDrawableBg = new GradientDrawable(
+                                                            GradientDrawable.Orientation.BOTTOM_TOP,
+                                                            new int[]{swatch.getRgb(), swatch.getRgb()});
+                        mContainer.setBackground(gradientDrawableBg);
+
+                        /* Set the Song Title and Album text color based on the album*/
+                        songTitle.setTextColor(swatch.getTitleTextColor());
+                        artistName.setTextColor(swatch.getBodyTextColor());
+                    } else {
+                        GradientDrawable gradientDrawable = new GradientDrawable(
+                                                            GradientDrawable.Orientation.BOTTOM_TOP,
+                                                            new int[]{0xFF000000, 0x00000000});
+                        gradient.setBackground(gradientDrawable);
+
+                        GradientDrawable gradientDrawableBg = new GradientDrawable(
+                                                            GradientDrawable.Orientation.BOTTOM_TOP,
+                                                            new int[]{0xFF000000, 0xFF000000});
+                        mContainer.setBackground(gradientDrawableBg);
+
+                        /* If swatch is not available,
+                           Set the Song Title and Album text color to constant WHITE */
+                        songTitle.setTextColor(Color.WHITE);
+                        artistName.setTextColor(Color.WHITE);
+                    }
+                }
+            });
         } else {
             Glide.with(this)
                     .asBitmap()
                     .load(R.drawable.ic_music)
                     .into(coverArt);
+
+            ImageView gradient = findViewById(R.id.ivGradientShade);
+            ConstraintLayout mContainer = findViewById(R.id.mContainer);
+            gradient.setBackgroundResource(R.drawable.bg_gradient_linear);
+            mContainer.setBackgroundResource(R.drawable.main_bg);
+
+            /* If no Cover Art is available,
+               Set the Song Title and Album text color to constant WHITE */
+            songTitle.setTextColor(Color.WHITE);
+            artistName.setTextColor(Color.WHITE);
         }
 
         int totalFileDuration = Integer.parseInt(listOfSongs.get(position).getDuration()) / 1000;
