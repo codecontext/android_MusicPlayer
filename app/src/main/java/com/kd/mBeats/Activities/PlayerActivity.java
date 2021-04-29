@@ -47,7 +47,7 @@ public class PlayerActivity extends AppCompatActivity {
     static MediaPlayer mediaPlayer;
 
     private Handler handler = new Handler();
-    private Thread playThread;
+    private Thread playThread, prevThread, nextThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +96,9 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         playThreadButton();
+        prevThreadButton();
+        nextThreadButton();
+
         super.onResume();
     }
 
@@ -138,7 +141,104 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
-    private String milliSecondsToTimer(int mCurrentPosition) {
+    private void prevThreadButton() {
+        prevThread = new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                prevButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        prevButtonClicked();
+                    }
+                });
+            }
+        };
+        prevThread.start();
+    }
+
+    private void prevButtonClicked() {
+        if(mediaPlayer.isPlaying()){
+            loadFile("prev");
+            mediaPlayer.start();
+            playPauseButton.setImageResource(R.drawable.ic_pause);
+
+        } else {
+            loadFile("prev");
+            playPauseButton.setImageResource(R.drawable.ic_play);
+        }
+    }
+
+    private void nextThreadButton() {
+        nextThread = new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                nextButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        nextButtonClicked();
+                    }
+                });
+            }
+        };
+        nextThread.start();
+    }
+
+    private void nextButtonClicked() {
+        if(mediaPlayer.isPlaying()){
+            loadFile("next");
+            mediaPlayer.start();
+            playPauseButton.setImageResource(R.drawable.ic_pause);
+
+        } else {
+            loadFile("next");
+            playPauseButton.setImageResource(R.drawable.ic_play);
+        }
+    }
+
+    void loadFile(String which){
+        mediaPlayer.stop();
+        mediaPlayer.release();
+
+        /* If the Prev/Next button is clicked while a song is playing, the prev/next song
+           will start playing from the beginning. If the current song is finished/paused,
+           then upon prev/next button click, prev/next song will be loaded at the beginning,
+           but won't start playing */
+        if (which == "prev"){
+            /* Keep the position in the range of song list. If the first song
+               is playing currently, the last song is loaded upon click */
+            position = (((position - 1) < 0) ? (listOfSongs.size() -1) : (position - 1));
+
+        } else if (which == "next"){
+            /* Keep the position in the range of song list. If the last song
+               is playing currently, the first song is loaded upon click */
+            position = ((position+1) % listOfSongs.size());
+        }
+
+        uri = Uri.parse(listOfSongs.get(position).getPath());
+
+        mediaPlayer = MediaPlayer.create(getApplicationContext(), uri);
+        readFileMetaData(uri);
+
+        songTitle.setText(listOfSongs.get(position).getTitle());
+        artistName.setText(listOfSongs.get(position).getArtist());
+
+        seekBar.setMax(mediaPlayer.getDuration() / 1000);
+
+        PlayerActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(mediaPlayer != null){
+                    int mCurrentPosition = mediaPlayer.getCurrentPosition() / 1000;
+                    seekBar.setProgress(mCurrentPosition);
+                }
+                handler.postDelayed(this, 1000);
+            }
+        });
+    }
+
+    public static String milliSecondsToTimer(int mCurrentPosition) {
         String totalOut = "";
         String totalNew = "";
         String seconds = String.valueOf(mCurrentPosition % 60);
@@ -198,17 +298,17 @@ public class PlayerActivity extends AppCompatActivity {
         retriever.setDataSource(uri.toString());
 
         byte[] art = retriever.getEmbeddedPicture();
+
         if(art != null){
-            if(art != null){
-                Glide.with(this)
-                        .asBitmap()
-                        .load(art)
-                        .into(coverArt);
-            } else {
-                Glide.with(this)
-                        .load(R.drawable.ic_music)
-                        .into(coverArt);
-            }
+            Glide.with(this)
+                    .asBitmap()
+                    .load(art)
+                    .into(coverArt);
+        } else {
+            Glide.with(this)
+                    .asBitmap()
+                    .load(R.drawable.ic_music)
+                    .into(coverArt);
         }
 
         int totalFileDuration = Integer.parseInt(listOfSongs.get(position).getDuration()) / 1000;
