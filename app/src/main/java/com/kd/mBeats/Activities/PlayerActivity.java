@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import static com.kd.mBeats.Activities.MainActivity.LOG_TAG;
 import static com.kd.mBeats.Activities.MainActivity.musicFiles;
 
-public class PlayerActivity extends AppCompatActivity {
+public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener{
 
     TextView songTitle;
     TextView artistName;
@@ -70,6 +70,8 @@ public class PlayerActivity extends AppCompatActivity {
 
         songTitle.setText(listOfSongs.get(position).getTitle());
         artistName.setText(listOfSongs.get(position).getArtist());
+
+        mediaPlayer.setOnCompletionListener(this);
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -172,12 +174,13 @@ public class PlayerActivity extends AppCompatActivity {
         if(mediaPlayer.isPlaying()){
             loadFile("prev");
             mediaPlayer.start();
-            playPauseButton.setImageResource(R.drawable.ic_pause);
+            playPauseButton.setBackgroundResource(R.drawable.ic_pause);
 
         } else {
             loadFile("prev");
-            playPauseButton.setImageResource(R.drawable.ic_play);
+            playPauseButton.setBackgroundResource(R.drawable.ic_play);
         }
+        mediaPlayer.setOnCompletionListener(this);
     }
 
     private void nextThreadButton() {
@@ -200,12 +203,13 @@ public class PlayerActivity extends AppCompatActivity {
         if(mediaPlayer.isPlaying()){
             loadFile("next");
             mediaPlayer.start();
-            playPauseButton.setImageResource(R.drawable.ic_pause);
+            playPauseButton.setBackgroundResource(R.drawable.ic_pause);
 
         } else {
             loadFile("next");
-            playPauseButton.setImageResource(R.drawable.ic_play);
+            playPauseButton.setBackgroundResource(R.drawable.ic_play);
         }
+        mediaPlayer.setOnCompletionListener(this);
     }
 
     void loadFile(String which){
@@ -381,5 +385,16 @@ public class PlayerActivity extends AppCompatActivity {
 
         int totalFileDuration = Integer.parseInt(listOfSongs.get(position).getDuration()) / 1000;
         durationTotal.setText(milliSecondsToTimer(totalFileDuration));
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        nextButtonClicked();
+
+        if(mediaPlayer != null){
+            mediaPlayer = MediaPlayer.create(getApplicationContext(), uri);
+            mediaPlayer.start();
+            mediaPlayer.setOnCompletionListener(this);
+        }
     }
 }
