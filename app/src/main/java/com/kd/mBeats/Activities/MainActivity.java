@@ -132,7 +132,8 @@ public class MainActivity extends AppCompatActivity {
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.DURATION,
                 MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.DATA //For PATH
+                MediaStore.Audio.Media.DATA, //For PATH
+                MediaStore.Audio.Media._ID
 
         };
 
@@ -146,8 +147,9 @@ public class MainActivity extends AppCompatActivity {
                 String duration = cursor.getString(2);
                 String artist = cursor.getString(3);
                 String path = cursor.getString(4);
+                String id = cursor.getString(5);
 
-                MusicFiles musicFiles = new MusicFiles(path, title, artist, album, duration);
+                MusicFiles musicFiles = new MusicFiles(path, title, artist, album, duration, id);
                 Log.v(LOG_TAG, "Path: " + path + "    album: "+album);
                 audioList.add(musicFiles);
             }
