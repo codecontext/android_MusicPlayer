@@ -1,11 +1,5 @@
 package com.kd.mBeats.Activities;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.palette.graphics.Palette;
-
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -17,12 +11,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -30,9 +26,12 @@ import com.kd.mBeats.Models.MusicFiles;
 import com.kd.mBeats.R;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import static com.kd.mBeats.Activities.MainActivity.LOG_TAG;
 import static com.kd.mBeats.Activities.MainActivity.musicFiles;
+import static com.kd.mBeats.Activities.MainActivity.repeatButtonState;
+import static com.kd.mBeats.Activities.MainActivity.shuffleButtonState;
 
 public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener{
 
@@ -102,6 +101,32 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                     durationPlayed.setText(milliSecondsToTimer(mCurrentPosition));
                 }
                 handler.postDelayed(this, 1000);
+            }
+        });
+
+        shuffleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(shuffleButtonState){
+                    shuffleButtonState = false;
+                    shuffleButton.setImageResource(R.drawable.ic_shuffle_off);
+                } else {
+                    shuffleButtonState = true;
+                    shuffleButton.setImageResource(R.drawable.ic_shuffle_on);
+                }
+            }
+        });
+
+        repeatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(repeatButtonState){
+                    repeatButtonState = false;
+                    repeatButton.setImageResource(R.drawable.ic_repeat_off);
+                } else {
+                    repeatButtonState = true;
+                    repeatButton.setImageResource(R.drawable.ic_repeat_one);
+                }
             }
         });
     }
@@ -220,16 +245,28 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
            will start playing from the beginning. If the current song is finished/paused,
            then upon prev/next button click, prev/next song will be loaded at the beginning,
            but won't start playing */
-        if (which == "prev"){
-            /* Keep the position in the range of song list. If the first song
-               is playing currently, the last song is loaded upon click */
-            position = (((position - 1) < 0) ? (listOfSongs.size() -1) : (position - 1));
 
-        } else if (which == "next"){
-            /* Keep the position in the range of song list. If the last song
-               is playing currently, the first song is loaded upon click */
-            position = ((position+1) % listOfSongs.size());
+        if(shuffleButtonState && !repeatButtonState){
+            position = getRandom(listOfSongs.size()-1);
+
+        } else if(!shuffleButtonState && !repeatButtonState) {
+            if (which == "prev") {
+                /* Keep the position in the range of song list. If the first song
+                   is playing currently, the last song is loaded upon click */
+                position = (((position - 1) < 0) ? (listOfSongs.size() - 1) : (position - 1));
+
+            } else if (which == "next") {
+                /* Keep the position in the range of song list. If the last song
+                   is playing currently, the first song is loaded upon click */
+                position = ((position + 1) % listOfSongs.size());
+
+            }
+        } else {
+            /* This condition indicates the repeat button is set.
+               So, don't change the position irrespective of shuffle button */
         }
+
+        Log.v(LOG_TAG, "Song position: " + position);
 
         uri = Uri.parse(listOfSongs.get(position).getPath());
 
@@ -251,6 +288,11 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                 handler.postDelayed(this, 1000);
             }
         });
+    }
+
+    private int getRandom(int i) {
+        Random random = new Random();
+        return random.nextInt(i+1);
     }
 
     public static String milliSecondsToTimer(int mCurrentPosition) {

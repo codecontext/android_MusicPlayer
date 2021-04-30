@@ -34,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_CODE = 123;
     static ArrayList<MusicFiles> musicFiles;
 
+    static boolean shuffleButtonState = false;
+    static boolean repeatButtonState = false;
+
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
