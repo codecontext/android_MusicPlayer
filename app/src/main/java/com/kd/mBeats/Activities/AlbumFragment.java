@@ -1,14 +1,18 @@
 package com.kd.mBeats.Activities;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.kd.mBeats.Adapters.AlbumAdapter;
 import com.kd.mBeats.R;
+
+import static com.kd.mBeats.Activities.MainActivity.musicFiles;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -25,6 +29,9 @@ public class AlbumFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    RecyclerView recyclerView;
+    AlbumAdapter albumAdapter;
 
     public AlbumFragment() {
         // Required empty public constructor
@@ -62,6 +69,15 @@ public class AlbumFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_album, container, false);
+        recyclerView = view.findViewById(R.id.songsRecyclerView);
+        recyclerView.setHasFixedSize(true);
+
+        if(!(musicFiles.size() < 1)){
+            albumAdapter = new AlbumAdapter(getContext(), musicFiles);
+            recyclerView.setAdapter(albumAdapter);
+            recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        }
+
         return view;
     }
 }

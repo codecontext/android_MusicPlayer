@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import static com.kd.mBeats.Activities.MainActivity.LOG_TAG;
 import static com.kd.mBeats.Activities.PlayerActivity.milliSecondsToTimer;
 
-public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder> {
+public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongsViewHolder> {
 
     private Context mContext;
     private ArrayList<MusicFiles> mFiles;
@@ -44,14 +44,14 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
 
     @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public SongsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.music_items, parent, false);
 
-        return new MyViewHolder(view);
+        return new SongsViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull SongsViewHolder holder, int position) {
         byte[] image = getAlbumArt(mFiles.get(position).getPath());
         if (image != null) {
             Glide.with(mContext)
@@ -156,7 +156,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
         return mFiles.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder{
+    public class SongsViewHolder extends RecyclerView.ViewHolder{
         ImageView albumArt;
         ImageView menuMore;
 
@@ -164,8 +164,9 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
         TextView albumName;
         TextView songDuration;
 
-        public MyViewHolder(@NonNull View itemView) {
+        public SongsViewHolder(@NonNull View itemView) {
             super(itemView);
+
             albumArt = itemView.findViewById(R.id.albumArt);
             menuMore = itemView.findViewById(R.id.menuMore);
             songTitle = itemView.findViewById(R.id.songTitle);
