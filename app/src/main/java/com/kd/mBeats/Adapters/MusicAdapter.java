@@ -35,7 +35,7 @@ import static com.kd.mBeats.Activities.PlayerActivity.milliSecondsToTimer;
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongsViewHolder> {
 
     private Context mContext;
-    private ArrayList<MusicFiles> mFiles;
+    public static ArrayList<MusicFiles> mFiles;
 
     public MusicAdapter(Context context, ArrayList<MusicFiles>files) {
         this.mFiles = files;
@@ -188,5 +188,12 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongsViewHol
         }
 
         return art;
+    }
+
+    public void updateSongList(ArrayList<MusicFiles> musicFileList){
+        mFiles = new ArrayList<>();
+        mFiles.addAll(musicFileList);
+
+        notifyDataSetChanged();
     }
 }
