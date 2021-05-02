@@ -18,7 +18,7 @@
 
     <TextView
         android:id="@+id/songTitle"
-        android:layout_width="270dp"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:gravity="left"
@@ -32,13 +32,13 @@
         app:layout_constraintTop_toTopOf="@+id/albumArt" />
 
     <TextView
-        android:id="@+id/albumName"
-        android:layout_width="270dp"
+        android:id="@+id/albumTitle"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:gravity="left"
         android:scrollHorizontally="true"
         android:singleLine="true"
-        android:text="Album "
+        android:text=""
         android:textColor="@color/white"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="@+id/songTitle"

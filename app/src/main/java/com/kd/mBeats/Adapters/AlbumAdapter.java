@@ -1,6 +1,7 @@
 package com.kd.mBeats.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaMetadataRetriever;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.kd.mBeats.Activities.AlbumDetailsActivity;
 import com.kd.mBeats.Models.MusicFiles;
 import com.kd.mBeats.R;
 
@@ -52,6 +54,15 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
         }
 
         holder.albumName.setText(albumFiles.get(position).getAlbum());
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, AlbumDetailsActivity.class);
+                intent.putExtra("albumName", albumFiles.get(position).getAlbum());
+                mContext.startActivity(intent);
+            }
+        });
     }
 
     @Override

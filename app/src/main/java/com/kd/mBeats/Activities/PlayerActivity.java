@@ -32,6 +32,7 @@ import static com.kd.mBeats.Activities.MainActivity.LOG_TAG;
 import static com.kd.mBeats.Activities.MainActivity.musicFiles;
 import static com.kd.mBeats.Activities.MainActivity.repeatButtonState;
 import static com.kd.mBeats.Activities.MainActivity.shuffleButtonState;
+import static com.kd.mBeats.Adapters.AlbumDetailsAdapter.albumFiles;
 
 public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener{
 
@@ -312,7 +313,15 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     private void getPlayIntent() {
         position = getIntent().getIntExtra("position", -1);
-        listOfSongs = musicFiles;
+        String sender = getIntent().getStringExtra("sender");
+
+        if((sender != null) && (sender.equals("albumDetails"))){
+            /* List songs from selected album */
+            listOfSongs = albumFiles;
+        } else {
+            /* List songs from all songs */
+            listOfSongs = musicFiles;
+        }
 
         if(listOfSongs != null){
             playPauseButton.setImageResource(R.drawable.ic_pause);

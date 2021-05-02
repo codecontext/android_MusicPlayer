@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     static boolean shuffleButtonState = false;
     static boolean repeatButtonState = false;
 
+    static ArrayList<MusicFiles> albums = new ArrayList<>();
+
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +126,8 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
     public static ArrayList<MusicFiles> getAllAudios(Context context){
+
+        ArrayList<String> duplicate = new ArrayList<>();
         ArrayList<MusicFiles> audioList = new ArrayList<>();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
@@ -152,6 +156,12 @@ public class MainActivity extends AppCompatActivity {
                 MusicFiles musicFiles = new MusicFiles(path, title, artist, album, duration, id);
                 Log.v(LOG_TAG, "Path: " + path + "    album: "+album);
                 audioList.add(musicFiles);
+
+                /* Avoid adding the duplicate files to the same album list */
+                if(!duplicate.contains(album)){
+                    albums.add(musicFiles);
+                    duplicate.add(album);
+                }
             }
             cursor.close();
         }

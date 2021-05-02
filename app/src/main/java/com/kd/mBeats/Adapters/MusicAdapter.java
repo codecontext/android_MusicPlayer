@@ -170,7 +170,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongsViewHol
             albumArt = itemView.findViewById(R.id.albumArt);
             menuMore = itemView.findViewById(R.id.menuMore);
             songTitle = itemView.findViewById(R.id.songTitle);
-            albumName = itemView.findViewById(R.id.albumName);
+            albumName = itemView.findViewById(R.id.albumTitle);
             songDuration = itemView.findViewById(R.id.songDuration);
         }
     }
