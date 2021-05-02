@@ -8,4 +8,28 @@
         android:icon="@drawable/ic_search"
         app:showAsAction="ifRoom"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
+
+    <item
+        android:id="@+id/sortOption"
+        android:title="Sort by"
+        app:showAsAction="never">
+
+        <menu>
+            <item
+                android:id="@+id/sortByName"
+                android:title="Name"
+                app:showAsAction="never"/>
+
+            <item
+                android:id="@+id/sortByDate"
+                android:title="Date"
+                app:showAsAction="never"/>
+
+            <item
+                android:id="@+id/sortBySize"
+                android:title="Size"
+                app:showAsAction="never"/>
+        </menu>
+    </item>
+
 </menu>
