@@ -30,6 +30,7 @@ import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.kd.mBeats.BroadcastReceivers.NotificationReceiver;
 import com.kd.mBeats.Interfaces.ActionPlaying;
 import com.kd.mBeats.Models.MusicFiles;
 import com.kd.mBeats.R;
@@ -38,16 +39,15 @@ import com.kd.mBeats.Services.MusicService;
 import java.util.ArrayList;
 import java.util.Random;
 
-import static com.kd.mBeats.Applications.ApplicationClass.ACTION_NEXT;
-import static com.kd.mBeats.Applications.ApplicationClass.ACTION_PLAY;
-import static com.kd.mBeats.Applications.ApplicationClass.ACTION_PREVIOUS;
-import static com.kd.mBeats.Applications.ApplicationClass.CHANNEL_ID_2;
 import static com.kd.mBeats.Activities.MainActivity.LOG_TAG;
-import static com.kd.mBeats.Activities.MainActivity.musicFiles;
 import static com.kd.mBeats.Activities.MainActivity.repeatButtonState;
 import static com.kd.mBeats.Activities.MainActivity.shuffleButtonState;
 import static com.kd.mBeats.Adapters.AlbumDetailsAdapter.albumFiles;
 import static com.kd.mBeats.Adapters.MusicAdapter.mFiles;
+import static com.kd.mBeats.Applications.ApplicationClass.ACTION_NEXT;
+import static com.kd.mBeats.Applications.ApplicationClass.ACTION_PLAY;
+import static com.kd.mBeats.Applications.ApplicationClass.ACTION_PREVIOUS;
+import static com.kd.mBeats.Applications.ApplicationClass.CHANNEL_ID_2;
 
 public class PlayerActivity extends AppCompatActivity
         implements ActionPlaying, ServiceConnection {
@@ -459,6 +459,7 @@ public class PlayerActivity extends AppCompatActivity
     public void onServiceConnected(ComponentName name, IBinder service) {
         MusicService.MyBinder myBinder = (MusicService.MyBinder) service;
         musicService = myBinder.getService();
+        musicService.setCallback(this);
 
         uri = Uri.parse(listOfSongs.get(position).getPath());
         Log.v(LOG_TAG, "URI received: " + uri);
@@ -508,7 +509,7 @@ public class PlayerActivity extends AppCompatActivity
                                                                         PendingIntent.FLAG_UPDATE_CURRENT);
 
         byte[] picture = null;
-        picture = getAlbumArt(musicFiles.get(position).getPath());
+        picture = getAlbumArt(listOfSongs.get(position).getPath());
 
         Bitmap thumb;
         if(picture != null) {
@@ -520,11 +521,11 @@ public class PlayerActivity extends AppCompatActivity
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID_2)
                 .setSmallIcon(playPauseButton)
                 .setLargeIcon(thumb)
-                .setContentTitle(musicFiles.get(position).getTitle())
-                .setContentText(musicFiles.get(position).getArtist())
+                .setContentTitle(listOfSongs.get(position).getTitle())
+                .setContentText(listOfSongs.get(position).getArtist())
                 .addAction(R.drawable.ic_skip_previous, "Previous", prevPending)
                 .addAction(playPauseButton, "Pause", pausePending)
-                .addAction(R.drawable.ic_skip_next, "Previous", nextPending)
+                .addAction(R.drawable.ic_skip_next, "Next", nextPending)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(mediaSessionCompat.getSessionToken()))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

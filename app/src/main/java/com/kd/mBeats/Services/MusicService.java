@@ -44,8 +44,32 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int myPosition = intent.getIntExtra("servicePosition", -1);
+        String actionName = intent.getStringExtra("ActionName");
+
         if(myPosition != -1) {
             playMedia(myPosition);
+        }
+
+        if(actionName != null){
+            switch (actionName){
+                case "playPause":
+                    if(actionPlaying != null){
+                        actionPlaying.playPauseButtonClicked();
+                    }
+                    break;
+
+                case "next":
+                    if(actionPlaying != null){
+                        actionPlaying.nextButtonClicked();
+                    }
+                    break;
+
+                case "previous":
+                    if(actionPlaying != null){
+                        actionPlaying.prevButtonClicked();
+                    }
+                    break;
+            }
         }
 
         return START_STICKY;
@@ -119,5 +143,9 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         createMediaPlayer(position);
         mediaPlayer.start();
         OnCompleted();
+    }
+
+    public void setCallback(ActionPlaying actionPlaying){
+        this.actionPlaying = actionPlaying;
     }
 }

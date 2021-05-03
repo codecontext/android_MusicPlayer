@@ -23,6 +23,14 @@
         </activity>
 
         <service android:name=".Services.MusicService" android:enabled="true"/>
+
+        <receiver android:name=".BroadcastReceivers.NotificationReceiver">
+            <intent-filter>
+                <action android:name="actionPrevious"/>
+                <action android:name="actionNext"/>
+                <action android:name="actionPlay"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
