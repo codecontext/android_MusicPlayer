@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Activities.NowplayingBottomFragment">
+
+    <RelativeLayout
+        android:id="@+id/fragBottomPlayer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/blue_denim"
+        android:padding="2dp">
+
+        <ImageView
+            android:id="@+id/albumArtMini"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_music"
+            android:scaleType="centerCrop"/>
+
+        <ImageView
+            android:id="@+id/skipPrevMini"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_skip_previous"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/playPauseMini"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/playPauseMini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_play"
+            android:layout_toStartOf="@+id/skipNextMini"
+            android:layout_marginEnd="10dp"
+            app:fabSize="mini"
+            android:layout_centerVertical="true"/>
+
+        <ImageView
+            android:id="@+id/skipNextMini"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_skip_next"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp"/>
+
+        <TextView
+            android:id="@+id/songTitleMini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:maxLines="1"
+            android:scrollHorizontally="true"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/albumArtMini"
+            android:layout_toStartOf="@id/skipPrevMini"/>
+
+        <TextView
+            android:id="@+id/artistNameMini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:scrollHorizontally="true"
+            android:layout_marginTop="2dp"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/albumArtMini"
+            android:layout_toStartOf="@id/skipPrevMini"
+            android:layout_below="@+id/songTitleMini"/>
+
+    </RelativeLayout>
+
+</FrameLayout>

@@ -45,6 +45,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     private String MY_SORT_PREF = "SortOrder";
 
+    public static final String MUSIC_LAST_PLAYED = "LAST_PLAYED";
+    public static final String MUSIC_FILE = "STORED_MUSIC";
+    public static final String ARTIST_NAME = "ARTIST_NAME";
+    public static final String SONG_TITLE = "SONG_TITLE";
+
+    public static boolean SHOW_MINI_PLAYER = false;
+    public static String PATH_TO_FRAG = null;
+    public static String ARTISH_TO_FRAG = null;
+    public static String SONGTITLE_TO_FRAG = null;
+
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -248,5 +258,27 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SharedPreferences preferences = getSharedPreferences(MUSIC_LAST_PLAYED, MODE_PRIVATE);
+        String path = preferences.getString(MUSIC_FILE, null);
+        String artistName = preferences.getString(ARTIST_NAME, null);
+        String songTitle = preferences.getString(SONG_TITLE, null);
+
+        if(path != null){
+            SHOW_MINI_PLAYER = true;
+            PATH_TO_FRAG = path;
+            ARTISH_TO_FRAG = artistName;
+            SONGTITLE_TO_FRAG = songTitle;
+        } else {
+            SHOW_MINI_PLAYER = false;
+            PATH_TO_FRAG = null;
+            ARTISH_TO_FRAG = null;
+            SONGTITLE_TO_FRAG = null;
+        }
     }
 }
