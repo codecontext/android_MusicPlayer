@@ -5,7 +5,7 @@
     android:id="@+id/mContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/main_bg"
+    android:background="@color/black"
     tools:context=".Activities.PlayerActivity">
 
     <TextView
@@ -21,14 +21,15 @@
         app:layout_constraintTop_toTopOf="parent"
         android:background="@drawable/bg_gradient_centre"/>
 
-    <ImageView
-        android:id="@+id/ivBackButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/ivAppIcon"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:padding="5dp"
+        android:src="@drawable/ic_music"
+        app:layout_constraintBottom_toTopOf="@+id/ivAlbumArt"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_chevron_left" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/ivListButton"
@@ -43,12 +44,12 @@
     <ImageView
         android:id="@+id/ivAlbumArt"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="450dp"
+        android:scaleType="centerCrop"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvNowPlaying"
-        app:srcCompat="@drawable/ic_music"
-        android:scaleType="centerCrop"/>
+        app:srcCompat="@drawable/ic_music" />
 
     <ImageView
         android:id="@+id/ivGradientShade"
@@ -57,8 +58,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/ivAlbumArt"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-<!--        app:srcCompat="@drawable/bg_gradient_linear" -->
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/bg_gradient_linear" />
 
     <TextView
         android:id="@+id/tvSongTitle"
@@ -72,6 +73,7 @@
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:singleLine="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ivAlbumArt" />
@@ -86,6 +88,7 @@
         android:gravity="center_horizontal|center_vertical"
         android:textColor="@color/white"
         android:textSize="14sp"
+        android:singleLine="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvSongTitle" />

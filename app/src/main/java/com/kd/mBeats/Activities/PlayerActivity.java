@@ -3,6 +3,7 @@ package com.kd.mBeats.Activities;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -29,11 +30,14 @@ import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.kd.mBeats.Interfaces.ActionPlaying;
 import com.kd.mBeats.Models.MusicFiles;
 import com.kd.mBeats.R;
 import com.kd.mBeats.Services.MusicService;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -63,15 +67,16 @@ public class PlayerActivity extends AppCompatActivity
     FloatingActionButton playPauseButton;
     SeekBar seekBar;
 
-    final int POSITION_INVALID = -1;
+    final boolean PALETTE_SWATCH_ON = false;
     final String SELECT_SONG_MSG = "Please select a song from the list";
     int position = POSITION_INVALID;
 
+    public static final int POSITION_INVALID = -1;
     public static ArrayList<MusicFiles> listOfSongs = new ArrayList<>();
+
     static Uri uri;
 
     private Handler handler = new Handler();
-    private Thread playThread, prevThread, nextThread;
 
     MusicService musicService;
 
@@ -125,12 +130,14 @@ public class PlayerActivity extends AppCompatActivity
         shuffleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(shuffleButtonState){
-                    shuffleButtonState = false;
-                    shuffleButton.setImageResource(R.drawable.ic_shuffle_off);
-                } else {
-                    shuffleButtonState = true;
-                    shuffleButton.setImageResource(R.drawable.ic_shuffle_on);
+                if((listOfSongs != null) & (position != POSITION_INVALID)) {
+                    if (shuffleButtonState) {
+                        shuffleButtonState = false;
+                        shuffleButton.setImageResource(R.drawable.ic_shuffle_off);
+                    } else {
+                        shuffleButtonState = true;
+                        shuffleButton.setImageResource(R.drawable.ic_shuffle_on);
+                    }
                 }
             }
         });
@@ -138,12 +145,14 @@ public class PlayerActivity extends AppCompatActivity
         repeatButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(repeatButtonState){
-                    repeatButtonState = false;
-                    repeatButton.setImageResource(R.drawable.ic_repeat_off);
-                } else {
-                    repeatButtonState = true;
-                    repeatButton.setImageResource(R.drawable.ic_repeat_one);
+                if ((listOfSongs != null) & (position != POSITION_INVALID)) {
+                    if (repeatButtonState) {
+                        repeatButtonState = false;
+                        repeatButton.setImageResource(R.drawable.ic_repeat_off);
+                    } else {
+                        repeatButtonState = true;
+                        repeatButton.setImageResource(R.drawable.ic_repeat_one);
+                    }
                 }
             }
         });
@@ -170,8 +179,9 @@ public class PlayerActivity extends AppCompatActivity
         Intent intent = new Intent(this, MusicService.class);
         bindService(intent, this, BIND_AUTO_CREATE);
 
+        playThreadButton();
+
         if((listOfSongs != null) & (position != POSITION_INVALID)) {
-            playThreadButton();
             prevThreadButton();
             nextThreadButton();
         }
@@ -193,7 +203,7 @@ public class PlayerActivity extends AppCompatActivity
     }
 
     private void playThreadButton() {
-        playThread = new Thread(){
+        Thread playThread = new Thread() {
             @Override
             public void run() {
                 super.run();
@@ -238,7 +248,7 @@ public class PlayerActivity extends AppCompatActivity
     }
 
     private void prevThreadButton() {
-        prevThread = new Thread(){
+        Thread prevThread = new Thread() {
             @Override
             public void run() {
                 super.run();
@@ -269,7 +279,7 @@ public class PlayerActivity extends AppCompatActivity
     }
 
     private void nextThreadButton() {
-        nextThread = new Thread(){
+        Thread nextThread = new Thread() {
             @Override
             public void run() {
                 super.run();
@@ -308,7 +318,7 @@ public class PlayerActivity extends AppCompatActivity
            but won't start playing */
 
         if(shuffleButtonState && !repeatButtonState){
-            position = getRandom(listOfSongs.size()-1);
+            position = getRandom(listOfSongs.size() - 1);
 
         } else if(!shuffleButtonState && !repeatButtonState) {
             if (which == "prev") {
@@ -326,8 +336,7 @@ public class PlayerActivity extends AppCompatActivity
             /* This condition indicates the repeat button is set.
                So, don't change the position irrespective of shuffle button */
         }
-
-        Log.e(LOG_TAG, "Song position: " + position);
+        saveData(listOfSongs);
 
         uri = Uri.parse(listOfSongs.get(position).getPath());
 
@@ -372,22 +381,30 @@ public class PlayerActivity extends AppCompatActivity
     }
 
     private void getPlayIntent() {
-        Log.e(LOG_TAG, "Position Before: "+position);
         position = getIntent().getIntExtra("position", POSITION_INVALID);
         Log.e(LOG_TAG, "Position received: "+position);
 
         String sender = getIntent().getStringExtra("sender");
+        Log.e(LOG_TAG, "Sender: "+sender);
 
         if((sender != null) && (sender.equals("albumDetails"))){
             /* List songs from selected album */
             listOfSongs = albumFiles;
+            saveData(listOfSongs);
+            playSong();
         } else if ((sender != null) && (sender.equals("songsList"))){
             /* List songs from all songs */
             listOfSongs = mFiles;
+            saveData(listOfSongs);
+            playSong();
         } else {
-            //Toast.makeText(this, "NO SONGS PRESENT", Toast.LENGTH_SHORT).show();
+            /* Load song list from saved shared preference */
+            listOfSongs = loadData();
+            playSong();
         }
+    }
 
+    private void playSong() {
         if(listOfSongs != null) {
             Intent intent = new Intent(this, MusicService.class);
             intent.putExtra("servicePosition", position);
@@ -395,6 +412,44 @@ public class PlayerActivity extends AppCompatActivity
             ContextCompat.startForegroundService(this, intent);
         }
     }
+
+    private void saveData(ArrayList<MusicFiles> list) {
+        SharedPreferences preferences = getSharedPreferences("SAVED_SONGLIST", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        Gson gson = new Gson();
+        String json = gson.toJson(list);
+
+        editor.putString("songs", json);
+        editor.apply();
+
+        Log.e(LOG_TAG, "Saved Song Position: "+position);
+        editor.putInt("song_position", position);
+        editor.apply();
+    }
+
+    private ArrayList<MusicFiles> loadData() {
+        ArrayList<MusicFiles> savedList = new ArrayList<>();
+
+        SharedPreferences preferences = getSharedPreferences("SAVED_SONGLIST", MODE_PRIVATE);
+
+        Gson gson = new Gson();
+        String json = preferences.getString("songs", null);
+
+        /* Get the type of array list */
+        Type type = new TypeToken<ArrayList<MusicFiles>>() {}.getType();
+
+        /* Receive data from gson and save it to array list */
+        savedList = gson.fromJson(json, type);
+
+        if (savedList == null) {
+            savedList = new ArrayList<>();
+        }
+        position = preferences.getInt("song_position", POSITION_INVALID);
+
+        return savedList;
+    }
+
 
     private void initViews() {
         songTitle = findViewById(R.id.tvSongTitle);
@@ -408,7 +463,7 @@ public class PlayerActivity extends AppCompatActivity
         repeatButton = findViewById(R.id.ivRepeatButton);
         playPauseButton = findViewById(R.id.fbPlayPauseButton);
         seekBar = findViewById(R.id.seekBar);
-        backButton = findViewById(R.id.ivBackButton);
+        backButton = findViewById(R.id.ivAppIcon);
         listButton = findViewById(R.id.ivListButton);
     }
 
@@ -425,51 +480,53 @@ public class PlayerActivity extends AppCompatActivity
                     .load(art)
                     .into(coverArt);
 
-            /* In this logic below, the play screen background, song title and artist name
-               are filled with the color of the Cover Art, dynamically reading from the current song*/
-            bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
-            Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
-                @Override
-                public void onGenerated(@Nullable Palette palette) {
-                    Palette.Swatch swatch = palette.getDominantSwatch();
+            if(PALETTE_SWATCH_ON) {
+                /*  In this logic below, the play screen background, song title and artist name
+                    are filled with the color of the Cover Art, dynamically reading from the current song */
+                bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
+                Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(@Nullable Palette palette) {
+                        Palette.Swatch swatch = palette.getDominantSwatch();
 
-                    ImageView gradient = findViewById(R.id.ivGradientShade);
-                    ConstraintLayout mContainer = findViewById(R.id.mContainer);
-                    gradient.setBackgroundResource(R.drawable.bg_gradient_linear);
-                    mContainer.setBackgroundResource(R.drawable.main_bg);
+                        ImageView gradient = findViewById(R.id.ivGradientShade);
+                        ConstraintLayout mContainer = findViewById(R.id.mContainer);
+                        gradient.setBackgroundResource(R.drawable.bg_gradient_linear);
+                        mContainer.setBackgroundResource(R.drawable.main_bg);
 
-                    if(swatch != null){
-                        GradientDrawable gradientDrawable = new GradientDrawable(
-                                                            GradientDrawable.Orientation.BOTTOM_TOP,
-                                                            new int[]{swatch.getRgb(), 0x00000000});
-                        gradient.setBackground(gradientDrawable);
+                        if (swatch != null) {
+                            GradientDrawable gradientDrawable = new GradientDrawable(
+                                    GradientDrawable.Orientation.BOTTOM_TOP,
+                                    new int[]{swatch.getRgb(), 0x00000000});
+                            gradient.setBackground(gradientDrawable);
 
-                        GradientDrawable gradientDrawableBg = new GradientDrawable(
-                                                            GradientDrawable.Orientation.BOTTOM_TOP,
-                                                            new int[]{swatch.getRgb(), swatch.getRgb()});
-                        mContainer.setBackground(gradientDrawableBg);
+                            GradientDrawable gradientDrawableBg = new GradientDrawable(
+                                    GradientDrawable.Orientation.BOTTOM_TOP,
+                                    new int[]{swatch.getRgb(), swatch.getRgb()});
+                            mContainer.setBackground(gradientDrawableBg);
 
-                        /* Set the Song Title and Album text color based on the album*/
-                        songTitle.setTextColor(swatch.getTitleTextColor());
-                        artistName.setTextColor(swatch.getBodyTextColor());
-                    } else {
-                        GradientDrawable gradientDrawable = new GradientDrawable(
-                                                            GradientDrawable.Orientation.BOTTOM_TOP,
-                                                            new int[]{0xFF000000, 0x00000000});
-                        gradient.setBackground(gradientDrawable);
+                            /* Set the Song Title and Album text color based on the album*/
+                            songTitle.setTextColor(swatch.getTitleTextColor());
+                            artistName.setTextColor(swatch.getBodyTextColor());
+                        } else {
+                            GradientDrawable gradientDrawable = new GradientDrawable(
+                                    GradientDrawable.Orientation.BOTTOM_TOP,
+                                    new int[]{0xFF000000, 0x00000000});
+                            gradient.setBackground(gradientDrawable);
 
-                        GradientDrawable gradientDrawableBg = new GradientDrawable(
-                                                            GradientDrawable.Orientation.BOTTOM_TOP,
-                                                            new int[]{0xFF000000, 0xFF000000});
-                        mContainer.setBackground(gradientDrawableBg);
+                            GradientDrawable gradientDrawableBg = new GradientDrawable(
+                                    GradientDrawable.Orientation.BOTTOM_TOP,
+                                    new int[]{0xFF000000, 0xFF000000});
+                            mContainer.setBackground(gradientDrawableBg);
 
                         /* If swatch is not available,
                            Set the Song Title and Album text color to constant WHITE */
-                        songTitle.setTextColor(Color.WHITE);
-                        artistName.setTextColor(Color.WHITE);
+                            songTitle.setTextColor(Color.WHITE);
+                            artistName.setTextColor(Color.WHITE);
+                        }
                     }
-                }
-            });
+                });
+            }
         } else {
             Glide.with(this)
                     .asBitmap()
@@ -497,22 +554,27 @@ public class PlayerActivity extends AppCompatActivity
         musicService = myBinder.getService();
         musicService.setCallback(this);
 
-        if((listOfSongs != null) & (position != POSITION_INVALID)) {
+        if ((listOfSongs != null)) {
+            if ((position != POSITION_INVALID)) {
 
-            uri = Uri.parse(listOfSongs.get(position).getPath());
-            Log.v(LOG_TAG, "URI received: " + uri);
+                uri = Uri.parse(listOfSongs.get(position).getPath());
+                Log.e(LOG_TAG, "URI received: " + uri);
+                Log.e(LOG_TAG, "Position: " + position);
 
-            readFileMetaData(uri);
+                readFileMetaData(uri);
 
-            seekBar.setMax((int) musicService.getDuration() / 1000);
-            songTitle.setText(listOfSongs.get(position).getTitle());
-            artistName.setText(listOfSongs.get(position).getArtist());
-            playPauseButton.setImageResource(R.drawable.ic_pause);
-            musicService.showNotification(R.drawable.ic_pause);
+                seekBar.setMax((int) musicService.getDuration() / 1000);
+                songTitle.setText(listOfSongs.get(position).getTitle());
+                artistName.setText(listOfSongs.get(position).getArtist());
+                playPauseButton.setImageResource(R.drawable.ic_pause);
+                musicService.showNotification(R.drawable.ic_pause);
 
-            musicService.OnCompleted();
+                musicService.OnCompleted();
+            } else {
+                Log.e(LOG_TAG, "Invalid song position");
+            }
         } else {
-            Toast.makeText(this, "Select song from the list", Toast.LENGTH_SHORT).show();
+            Log.e(LOG_TAG, "Song List Empty");
         }
     }
 

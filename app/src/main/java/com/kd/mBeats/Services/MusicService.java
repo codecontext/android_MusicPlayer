@@ -25,6 +25,7 @@ import com.kd.mBeats.R;
 
 import java.util.ArrayList;
 
+import static com.kd.mBeats.Activities.PlayerActivity.POSITION_INVALID;
 import static com.kd.mBeats.Activities.PlayerActivity.listOfSongs;
 import static com.kd.mBeats.Applications.ApplicationClass.ACTION_NEXT;
 import static com.kd.mBeats.Applications.ApplicationClass.ACTION_PLAY;
@@ -36,7 +37,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     MediaPlayer mediaPlayer;
     ArrayList<MusicFiles> musicFiles = new ArrayList<>();
     Uri uri;
-    int position = -1;
+    int position = POSITION_INVALID;
     ActionPlaying actionPlaying;
     MediaSessionCompat mediaSessionCompat;
     public static final String MUSIC_LAST_PLAYED = "LAST_PLAYED";
@@ -65,10 +66,10 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        int myPosition = intent.getIntExtra("servicePosition", -1);
+        int myPosition = intent.getIntExtra("servicePosition", POSITION_INVALID);
         String actionName = intent.getStringExtra("ActionName");
 
-        if(myPosition != -1) {
+        if(myPosition != POSITION_INVALID) {
             playMedia(myPosition);
         }
 
