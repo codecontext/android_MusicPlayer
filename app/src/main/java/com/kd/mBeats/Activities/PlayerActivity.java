@@ -69,10 +69,12 @@ public class PlayerActivity extends AppCompatActivity
 
     final boolean PALETTE_SWATCH_ON = false;
     final String SELECT_SONG_MSG = "Please select a song from the list";
-    int position = POSITION_INVALID;
 
     public static final int POSITION_INVALID = -1;
     public static ArrayList<MusicFiles> listOfSongs = new ArrayList<>();
+
+    public static String sender = "";
+    int position = POSITION_INVALID;
 
     static Uri uri;
 
@@ -384,8 +386,7 @@ public class PlayerActivity extends AppCompatActivity
         position = getIntent().getIntExtra("position", POSITION_INVALID);
         Log.e(LOG_TAG, "Position received: "+position);
 
-        String sender = getIntent().getStringExtra("sender");
-        Log.e(LOG_TAG, "Sender: "+sender);
+        sender = getIntent().getStringExtra("sender");
 
         if((sender != null) && (sender.equals("albumDetails"))){
             /* List songs from selected album */
@@ -398,6 +399,7 @@ public class PlayerActivity extends AppCompatActivity
             saveData(listOfSongs);
             playSong();
         } else {
+            sender = "system";
             /* Load song list from saved shared preference */
             listOfSongs = loadData();
             playSong();
@@ -566,10 +568,19 @@ public class PlayerActivity extends AppCompatActivity
                 seekBar.setMax((int) musicService.getDuration() / 1000);
                 songTitle.setText(listOfSongs.get(position).getTitle());
                 artistName.setText(listOfSongs.get(position).getArtist());
-                playPauseButton.setImageResource(R.drawable.ic_pause);
-                musicService.showNotification(R.drawable.ic_pause);
 
+                Log.e(LOG_TAG, "Sender: "+sender);
+
+                /* Do not start the media on app launch */
+                if (sender.equals("system")) {
+                    playPauseButton.setImageResource(R.drawable.ic_play);
+                    musicService.showNotification(R.drawable.ic_play);
+                } else {
+                    playPauseButton.setImageResource(R.drawable.ic_pause);
+                    musicService.showNotification(R.drawable.ic_pause);
+                }
                 musicService.OnCompleted();
+
             } else {
                 Log.e(LOG_TAG, "Invalid song position");
             }

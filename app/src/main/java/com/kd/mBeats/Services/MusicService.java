@@ -27,6 +27,7 @@ import java.util.ArrayList;
 
 import static com.kd.mBeats.Activities.PlayerActivity.POSITION_INVALID;
 import static com.kd.mBeats.Activities.PlayerActivity.listOfSongs;
+import static com.kd.mBeats.Activities.PlayerActivity.sender;
 import static com.kd.mBeats.Applications.ApplicationClass.ACTION_NEXT;
 import static com.kd.mBeats.Applications.ApplicationClass.ACTION_PLAY;
 import static com.kd.mBeats.Applications.ApplicationClass.ACTION_PREVIOUS;
@@ -112,7 +113,11 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
             }
         } else {
             createMediaPlayer(position);
-            mediaPlayer.start();
+
+            /* Do not start the media on app launch */
+            if(!sender.equals("system")) {
+                mediaPlayer.start();
+            }
         }
     }
 
