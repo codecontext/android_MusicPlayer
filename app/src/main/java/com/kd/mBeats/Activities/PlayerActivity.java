@@ -1,6 +1,8 @@
 package com.kd.mBeats.Activities;
 
+import android.app.ActivityManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -15,8 +17,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -25,7 +25,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
 import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.Glide;
@@ -87,7 +86,6 @@ public class PlayerActivity extends AppCompatActivity
         Log.e(LOG_TAG, "PlayerActivity onCreate()");
 
         super.onCreate(savedInstanceState);
-        setFullScreen();
         setContentView(R.layout.activity_player);
         getSupportActionBar().hide();
 
@@ -169,14 +167,29 @@ public class PlayerActivity extends AppCompatActivity
     }
 
     private void setFullScreen() {
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                             //WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        View decorView = getWindow().getDecorView();
+        /*  Hide both the navigation bar and the status bar.
+            SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+            a general rule, you should design your app to hide the status bar whenever you
+            hide the navigation bar. */
+        final int flagsHide = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+        decorView.setSystemUiVisibility(flagsHide);
     }
 
     @Override
     protected void onResume() {
         Log.e(LOG_TAG, "PlayerActivity onResume()");
+        setFullScreen();
 
         Intent intent = new Intent(this, MusicService.class);
         bindService(intent, this, BIND_AUTO_CREATE);
@@ -346,7 +359,9 @@ public class PlayerActivity extends AppCompatActivity
         readFileMetaData(uri);
 
         songTitle.setText(listOfSongs.get(position).getTitle());
+        songTitle.setSelected(true);
         artistName.setText(listOfSongs.get(position).getArtist());
+        artistName.setSelected(true);
 
         seekBar.setMax(musicService.getDuration() / 1000);
 
@@ -410,8 +425,8 @@ public class PlayerActivity extends AppCompatActivity
         if(listOfSongs != null) {
             Intent intent = new Intent(this, MusicService.class);
             intent.putExtra("servicePosition", position);
-            //startService(intent);
-            ContextCompat.startForegroundService(this, intent);
+            startService(intent);
+            //ContextCompat.startForegroundService(this, intent);
         }
     }
 
@@ -572,7 +587,7 @@ public class PlayerActivity extends AppCompatActivity
                 Log.e(LOG_TAG, "Sender: "+sender);
 
                 /* Do not start the media on app launch */
-                if (sender.equals("system")) {
+                if (sender.equals("system") && !musicService.isPlaying()) {
                     playPauseButton.setImageResource(R.drawable.ic_play);
                     musicService.showNotification(R.drawable.ic_play);
                 } else {
@@ -592,5 +607,18 @@ public class PlayerActivity extends AppCompatActivity
     @Override
     public void onServiceDisconnected(ComponentName name) {
         musicService = null;
+    }
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        }
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

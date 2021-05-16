@@ -13,16 +13,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MBeats">
-        <activity android:name=".Activities.AlbumDetailsActivity" />
-        <activity android:name=".Activities.PlayerActivity">
+        <activity android:name=".Activities.AlbumDetailsActivity"
+            android:screenOrientation = "portrait"/>
+        <activity android:name=".Activities.PlayerActivity"
+            android:screenOrientation = "portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activities.MainActivity">
-
-        </activity>
+        <activity android:name=".Activities.MainActivity"
+            android:screenOrientation = "portrait"/>
 
         <service android:name=".Services.MusicService" android:enabled="true"/>
 

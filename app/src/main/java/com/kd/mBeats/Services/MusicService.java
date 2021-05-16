@@ -109,7 +109,11 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
             if(musicFiles != null){
                 createMediaPlayer(position);
-                mediaPlayer.start();
+
+                /* Do not start the media on app launch */
+                if(!sender.equals("system")) {
+                    mediaPlayer.start();
+                }
             }
         } else {
             createMediaPlayer(position);

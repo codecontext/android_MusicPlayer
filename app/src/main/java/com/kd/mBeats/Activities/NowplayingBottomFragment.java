@@ -89,6 +89,9 @@ public class NowplayingBottomFragment extends Fragment {
         nextButton = view.findViewById(R.id.skipNextMini);
         playPauseButton = view.findViewById(R.id.playPauseMini);
 
+        songTitle.setSelected(true);
+        artistName.setSelected(true);
+
         return view;
     }
 
