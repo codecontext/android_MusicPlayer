@@ -12,6 +12,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -264,6 +265,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void onResume() {
         super.onResume();
 
+        setFullScreen();
+
         SharedPreferences preferences = getSharedPreferences(MUSIC_LAST_PLAYED, MODE_PRIVATE);
         String path = preferences.getString(MUSIC_FILE, null);
         String artistName = preferences.getString(ARTIST_NAME, null);
@@ -280,5 +283,21 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             ARTISH_TO_FRAG = null;
             SONGTITLE_TO_FRAG = null;
         }
+    }
+
+    private void setFullScreen() {
+        View decorView = getWindow().getDecorView();
+        /*  Hide both the navigation bar and the status bar.
+            SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+            a general rule, you should design your app to hide the status bar whenever you
+            hide the navigation bar. */
+        final int flagsHide = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+        decorView.setSystemUiVisibility(flagsHide);
     }
 }
