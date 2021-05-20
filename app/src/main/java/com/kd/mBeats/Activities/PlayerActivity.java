@@ -45,6 +45,7 @@ import static com.kd.mBeats.Activities.MainActivity.repeatButtonState;
 import static com.kd.mBeats.Activities.MainActivity.shuffleButtonState;
 import static com.kd.mBeats.Adapters.AlbumDetailsAdapter.albumFiles;
 import static com.kd.mBeats.Adapters.MusicAdapter.mFiles;
+import static com.kd.mBeats.Services.MusicService.isCallOngoing;
 
 public class PlayerActivity extends AppCompatActivity
         implements ActionPlaying, ServiceConnection {
@@ -240,9 +241,11 @@ public class PlayerActivity extends AppCompatActivity
                 playPauseButton.setImageResource(R.drawable.ic_play);
                 musicService.showNotification(R.drawable.ic_play);
             } else {
-                musicService.start();
-                playPauseButton.setImageResource(R.drawable.ic_pause);
-                musicService.showNotification(R.drawable.ic_pause);
+                if(isCallOngoing == false) {
+                    musicService.start();
+                    playPauseButton.setImageResource(R.drawable.ic_pause);
+                    musicService.showNotification(R.drawable.ic_pause);
+                }
             }
 
             seekBar.setMax(musicService.getDuration() / 1000);

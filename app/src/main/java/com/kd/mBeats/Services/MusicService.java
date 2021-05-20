@@ -3,6 +3,7 @@ package com.kd.mBeats.Services;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -13,6 +14,8 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -46,6 +49,10 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     public static final String ARTIST_NAME = "ARTIST_NAME";
     public static final String SONG_TITLE = "SONG_TITLE";
 
+    public static boolean isCallOngoing = false;
+    private PhoneStateListener phoneStateListener;
+    private TelephonyManager telephonyManager;
+
 
     @Override
     public void onCreate() {
@@ -69,6 +76,45 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     public int onStartCommand(Intent intent, int flags, int startId) {
         int myPosition = intent.getIntExtra("servicePosition", POSITION_INVALID);
         String actionName = intent.getStringExtra("ActionName");
+
+        /* This section of code below handles music player state during an
+           incoming/outgoing call. While the call is initiated, the music
+           player is paused and resumed upon call end */
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        phoneStateListener = new PhoneStateListener() {
+            @Override
+            public void onCallStateChanged(int state, String phoneNumber) {
+
+                switch (state){
+                    case TelephonyManager.CALL_STATE_OFFHOOK:
+                    case TelephonyManager.CALL_STATE_RINGING:
+                        if(mediaPlayer != null){
+                            if(isPlaying()) {
+                                pause();
+                                showNotification(R.drawable.ic_play);
+                                isCallOngoing = true;
+                            }
+                        }
+                        break;
+
+                    case TelephonyManager.CALL_STATE_IDLE:
+                        if(mediaPlayer != null){
+                            if(!isPlaying()) {
+                                if(!sender.equals("system")) {
+                                    start();
+                                    showNotification(R.drawable.ic_pause);
+                                }
+                                isCallOngoing = false;
+                            }
+                        }
+                        break;
+                }
+
+                super.onCallStateChanged(state, phoneNumber);
+            }
+        };
+
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 
         if(myPosition != POSITION_INVALID) {
             playMedia(myPosition);
@@ -187,6 +233,23 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
                 mediaPlayer.start();
                 OnCompleted();
             }
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if(mediaPlayer != null){
+            if(isPlaying()){
+                stop();
+            }
+            release();
+        }
+
+        /* Release the Phone state listener when the app is destroyed */
+        if(phoneStateListener != null){
+            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
         }
     }
 
