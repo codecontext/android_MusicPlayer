@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -16,6 +17,7 @@ import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -28,6 +30,7 @@ import com.kd.mBeats.R;
 
 import java.util.ArrayList;
 
+import static com.kd.mBeats.Activities.MainActivity.LOG_TAG;
 import static com.kd.mBeats.Activities.PlayerActivity.POSITION_INVALID;
 import static com.kd.mBeats.Activities.PlayerActivity.listOfSongs;
 import static com.kd.mBeats.Activities.PlayerActivity.sender;
@@ -36,7 +39,10 @@ import static com.kd.mBeats.Applications.ApplicationClass.ACTION_PLAY;
 import static com.kd.mBeats.Applications.ApplicationClass.ACTION_PREVIOUS;
 import static com.kd.mBeats.Applications.ApplicationClass.CHANNEL_ID_1;
 
-public class MusicService extends Service implements MediaPlayer.OnCompletionListener {
+public class MusicService extends Service implements
+        MediaPlayer.OnCompletionListener,
+        AudioManager.OnAudioFocusChangeListener{
+
     IBinder binder = new MyBinder();
     MediaPlayer mediaPlayer;
     ArrayList<MusicFiles> musicFiles = new ArrayList<>();
@@ -52,6 +58,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     public static boolean isCallOngoing = false;
     private PhoneStateListener phoneStateListener;
     private TelephonyManager telephonyManager;
+
+    private AudioManager audioManager;
 
 
     @Override
@@ -72,10 +80,71 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         }
     }
 
+
+    @Override
+    public void onAudioFocusChange(int focusState) {
+        switch (focusState) {
+            case AudioManager.AUDIOFOCUS_GAIN:
+                /* Gained focus, media can be played now */
+                if (!isPlaying()) {
+                    start();
+                    showNotification(R.drawable.ic_pause);
+                    mediaPlayer.setVolume(1.0f, 1.0f);
+                    Log.e(LOG_TAG, "AudioManager.AUDIOFOCUS_GAIN");
+                }
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS:
+                /* Lost focus for an unbounded amount of time: stop playback and release media player */
+                if (isPlaying()) {
+                    stop();
+                    release();
+                    mediaPlayer = null;
+                    Log.e(LOG_TAG, "AudioManager.AUDIOFOCUS_LOSS");
+                }
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                /* Lost focus for a short time, but we have to stop playback.
+                   We don't release the media player because playback
+                   is likely to resume */
+                if (isPlaying()) {
+                    mediaPlayer.pause();
+                    showNotification(R.drawable.ic_play);
+                }
+                Log.e(LOG_TAG, "AudioManager.AUDIOFOCUS_LOSS_TRANSIENT");
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                /* Lost focus for a short time, but it's ok to keep playing at an attenuated level */
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.setVolume(0.2f, 0.2f);
+                }
+                Log.e(LOG_TAG, "AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");
+                break;
+        }
+    }
+
+    private boolean requestAudioFocus() {
+
+        boolean focusGranted = false;
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+        int result = audioManager.requestAudioFocus( this,
+                                                        AudioManager.STREAM_MUSIC,
+                                                        AudioManager.AUDIOFOCUS_GAIN);
+
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            focusGranted = true;
+        }
+
+        Log.e(LOG_TAG, "focusGranted: "+ focusGranted);
+        return focusGranted;
+    }
+
+    private boolean removeAudioFocus() {
+        return AudioManager.AUDIOFOCUS_REQUEST_GRANTED == audioManager.abandonAudioFocus(this);
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        int myPosition = intent.getIntExtra("servicePosition", POSITION_INVALID);
-        String actionName = intent.getStringExtra("ActionName");
 
         /* This section of code below handles music player state during an
            incoming/outgoing call. While the call is initiated, the music
@@ -116,30 +185,42 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
         telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 
-        if(myPosition != POSITION_INVALID) {
-            playMedia(myPosition);
+        /* Stop the service if Audio is not available */
+        if (requestAudioFocus() == false) {
+            stopSelf();
         }
 
-        if(actionName != null){
-            switch (actionName){
-                case "playPause":
-                    if(actionPlaying != null){
-                        actionPlaying.playPauseButtonClicked();
-                    }
-                    break;
+        try {
+            int myPosition = intent.getIntExtra("servicePosition", POSITION_INVALID);
+            String actionName = intent.getStringExtra("ActionName");
 
-                case "next":
-                    if(actionPlaying != null){
-                        actionPlaying.nextButtonClicked();
-                    }
-                    break;
-
-                case "previous":
-                    if(actionPlaying != null){
-                        actionPlaying.prevButtonClicked();
-                    }
-                    break;
+            if (myPosition != POSITION_INVALID) {
+                playMedia(myPosition);
             }
+
+            if (actionName != null) {
+                switch (actionName) {
+                    case "playPause":
+                        if (actionPlaying != null) {
+                            actionPlaying.playPauseButtonClicked();
+                        }
+                        break;
+
+                    case "next":
+                        if (actionPlaying != null) {
+                            actionPlaying.nextButtonClicked();
+                        }
+                        break;
+
+                    case "previous":
+                        if (actionPlaying != null) {
+                            actionPlaying.prevButtonClicked();
+                        }
+                        break;
+                }
+            }
+        } catch (NullPointerException e){
+            stopSelf();
         }
 
         return START_STICKY;
@@ -251,6 +332,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         if(phoneStateListener != null){
             telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
         }
+
+        removeAudioFocus();
     }
 
     public void setCallback(ActionPlaying actionPlaying){
