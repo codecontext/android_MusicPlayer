@@ -5,7 +5,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -29,14 +28,12 @@ import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.kd.mBeats.Interfaces.ActionPlaying;
 import com.kd.mBeats.Models.MusicFiles;
 import com.kd.mBeats.R;
 import com.kd.mBeats.Services.MusicService;
+import com.kd.mBeats.Utilities.StorageUtil;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -419,7 +416,7 @@ public class PlayerActivity extends AppCompatActivity
         } else {
             sender = "system";
             /* Load song list from saved shared preference */
-            listOfSongs = loadData();
+            loadData();
             playSong();
         }
     }
@@ -434,40 +431,17 @@ public class PlayerActivity extends AppCompatActivity
     }
 
     private void saveData(ArrayList<MusicFiles> list) {
-        SharedPreferences preferences = getSharedPreferences("SAVED_SONGLIST", MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
+        StorageUtil storage = new StorageUtil(getApplicationContext());
 
-        Gson gson = new Gson();
-        String json = gson.toJson(list);
-
-        editor.putString("songs", json);
-        editor.apply();
-
-        Log.e(LOG_TAG, "Saved Song Position: "+position);
-        editor.putInt("song_position", position);
-        editor.apply();
+        storage.storeAudioList(list);
+        storage.storeAudioIndex(position);
     }
 
-    private ArrayList<MusicFiles> loadData() {
-        ArrayList<MusicFiles> savedList = new ArrayList<>();
+    private void loadData() {
+        StorageUtil storage = new StorageUtil(getApplicationContext());
 
-        SharedPreferences preferences = getSharedPreferences("SAVED_SONGLIST", MODE_PRIVATE);
-
-        Gson gson = new Gson();
-        String json = preferences.getString("songs", null);
-
-        /* Get the type of array list */
-        Type type = new TypeToken<ArrayList<MusicFiles>>() {}.getType();
-
-        /* Receive data from gson and save it to array list */
-        savedList = gson.fromJson(json, type);
-
-        if (savedList == null) {
-            savedList = new ArrayList<>();
-        }
-        position = preferences.getInt("song_position", POSITION_INVALID);
-
-        return savedList;
+        listOfSongs = storage.loadAudioList();
+        position = storage.loadAudioIndex();
     }
 
 
